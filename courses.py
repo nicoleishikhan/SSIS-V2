@@ -1,4 +1,6 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QFormLayout, QDialogButtonBox, QMessageBox, QInputDialog, QTableWidgetItem
+from PyQt6.QtGui import QFont
+from PyQt6.QtCore import Qt
 
 def populate_course_table(main_window, data=None):
     connection = main_window.create_connection()
@@ -35,6 +37,25 @@ def add_course(main_window):
     button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
     button_box.accepted.connect(dialog.accept)
     button_box.rejected.connect(dialog.reject)
+
+    # Apply fun styles to buttons
+    button_box.setStyleSheet("""
+        QPushButton {
+            background-color: #87CEEB;
+            border: 2px solid #4682B4;
+            border-radius: 10px;
+            padding: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+        }
+        QPushButton:hover {
+            background-color: #4682B4;
+        }
+        QPushButton:pressed {
+            background-color: #1E90FF;
+        }
+    """)
 
     layout.addLayout(form_layout)
     layout.addWidget(button_box)
@@ -120,6 +141,25 @@ def update_course(main_window):
     button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
     button_box.accepted.connect(dialog.accept)
     button_box.rejected.connect(dialog.reject)
+
+    # Apply fun styles to buttons
+    button_box.setStyleSheet("""
+        QPushButton {
+            background-color: #87CEEB;
+            border: 2px solid #4682B4;
+            border-radius: 10px;
+            padding: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+        }
+        QPushButton:hover {
+            background-color: #4682B4;
+        }
+        QPushButton:pressed {
+            background-color: #1E90FF;
+        }
+    """)
 
     layout.addLayout(form_layout)
     layout.addWidget(button_box)

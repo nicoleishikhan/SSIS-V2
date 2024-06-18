@@ -78,7 +78,7 @@ class MainWindow(QMainWindow):
         course_tab = QWidget()
         course_tab_layout = QVBoxLayout(course_tab)
 
-        title_label = QLabel("Courses Management", self)
+        title_label = QLabel("Course Management", self)
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title_label.setStyleSheet("font-size: 24px; font-weight: bold; margin-bottom: 20px;")
         course_tab_layout.addWidget(title_label)
@@ -139,7 +139,7 @@ class MainWindow(QMainWindow):
         student_tab = QWidget()
         student_tab_layout = QVBoxLayout(student_tab)
 
-        title_label = QLabel("Students Management", self)
+        title_label = QLabel("Student Management", self)
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title_label.setStyleSheet("font-size: 24px; font-weight: bold; margin-bottom: 20px;")
         student_tab_layout.addWidget(title_label)
