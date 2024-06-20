@@ -5,7 +5,7 @@ from database import create_connection
 import students
 import courses
 
-class MainWindow(QMainWindow):
+class Main_Window(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Student Information System")
@@ -237,6 +237,6 @@ class MainWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = Main_Window()
     window.show()
     sys.exit(app.exec())

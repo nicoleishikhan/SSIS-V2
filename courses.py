@@ -1,14 +1,19 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QFormLayout, QDialogButtonBox, QMessageBox, QInputDialog, QTableWidgetItem
-from PyQt6.QtGui import QFont
-from PyQt6.QtCore import Qt
 
-def populate_course_table(main_window, data=None):
+def execute_query(main_window, query, params=()):
     connection = main_window.create_connection()
     cursor = connection.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS courses (Code VARCHAR(255), Name VARCHAR(255))")
+    cursor.execute(query, params)
+    result = cursor.fetchall()
+    connection.close()
+    return result
+
+def populate_course_table(main_window, data=None):
+    create_table_query = "CREATE TABLE IF NOT EXISTS courses (Code VARCHAR(255), Name VARCHAR(255))"
+    execute_query(main_window, create_table_query)
+
     if data is None:
-        cursor.execute("SELECT * FROM courses")
-        data = cursor.fetchall()
+        data = execute_query(main_window, "SELECT * FROM courses")
 
     main_window.course_table.clearContents()
     main_window.course_table.setRowCount(len(data))
@@ -19,7 +24,6 @@ def populate_course_table(main_window, data=None):
             item = QTableWidgetItem(row_data[column_index])
             main_window.course_table.setItem(row_index, column_index, item)
 
-    connection.close()
 
 def add_course(main_window):
     dialog = QDialog(main_window)
@@ -38,25 +42,6 @@ def add_course(main_window):
     button_box.accepted.connect(dialog.accept)
     button_box.rejected.connect(dialog.reject)
 
-    # Apply fun styles to buttons
-    button_box.setStyleSheet("""
-        QPushButton {
-            background-color: #87CEEB;
-            border: 2px solid #4682B4;
-            border-radius: 10px;
-            padding: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-        }
-        QPushButton:hover {
-            background-color: #4682B4;
-        }
-        QPushButton:pressed {
-            background-color: #1E90FF;
-        }
-    """)
-
     layout.addLayout(form_layout)
     layout.addWidget(button_box)
 
@@ -70,34 +55,39 @@ def add_course(main_window):
 
         connection = main_window.create_connection()
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS courses (Name VARCHAR(255), Code VARCHAR(255))")
-        cursor.execute("INSERT INTO courses (Name, Code) VALUES (%s, %s)", (course_name, course_code))
-        connection.commit()
+
+        # Check if the course code already exists
+        cursor.execute("SELECT * FROM courses WHERE Code = %s", (course_code,))
+        existing_course = cursor.fetchone()
+
+        if existing_course:
+            QMessageBox.warning(main_window, "Error", f"A course with code '{course_code}' already exists!")
+        else:
+            cursor.execute("INSERT INTO courses (Name, Code) VALUES (%s, %s)", (course_name, course_code))
+            connection.commit()
+            QMessageBox.information(main_window, 'Success', 'Course added successfully!')
+            main_window.populate_course_table()
+
         connection.close()
 
-        QMessageBox.information(main_window, 'Success', 'Course added successfully!')
-        main_window.populate_course_table()
 
 def delete_course(main_window):
-    course_code, ok1 = QInputDialog.getText(main_window, 'Course Code', 'Enter course code:')
-    if not ok1:
+    course_code, ok = QInputDialog.getText(main_window, 'Course Code', 'Enter course code:')
+    if not ok:
         return
 
     connection = main_window.create_connection()
     cursor = connection.cursor()
+
     cursor.execute("SELECT StudentID FROM students WHERE CourseCode=%s", (course_code,))
     student_ids = cursor.fetchall()
-    connection.close()
 
-    connection = main_window.create_connection()
-    cursor = connection.cursor()
-    for student_id in student_ids:
-        cursor.execute("UPDATE students SET CourseCode='N/A' WHERE StudentID=%s", (student_id,))
+    # Set the CourseCode to NULL for the students associated with the course being deleted
+    for (student_id,) in student_ids:
+        cursor.execute("UPDATE students SET CourseCode=NULL WHERE StudentID=%s", (student_id,))
     connection.commit()
-    connection.close()
 
-    connection = main_window.create_connection()
-    cursor = connection.cursor()
+    # Delete the course from the courses table
     cursor.execute("DELETE FROM courses WHERE Code=%s", (course_code,))
     connection.commit()
     connection.close()
@@ -106,6 +96,8 @@ def delete_course(main_window):
     main_window.populate_student_table()
 
     QMessageBox.information(main_window, 'Success', 'Course deleted successfully!')
+
+
 
 def update_course(main_window):
     course_code, ok1 = QInputDialog.getText(main_window, 'Course Code', 'Enter course code:')
@@ -141,25 +133,6 @@ def update_course(main_window):
     button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
     button_box.accepted.connect(dialog.accept)
     button_box.rejected.connect(dialog.reject)
-
-    # Apply fun styles to buttons
-    button_box.setStyleSheet("""
-        QPushButton {
-            background-color: #87CEEB;
-            border: 2px solid #4682B4;
-            border-radius: 10px;
-            padding: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-        }
-        QPushButton:hover {
-            background-color: #4682B4;
-        }
-        QPushButton:pressed {
-            background-color: #1E90FF;
-        }
-    """)
 
     layout.addLayout(form_layout)
     layout.addWidget(button_box)

@@ -1,14 +1,27 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QFormLayout, QComboBox, QDialogButtonBox, QMessageBox, QInputDialog, QTableWidgetItem
 
-def populate_student_table(main_window, data=None):
+def execute_query(main_window, query, params=()):
     connection = main_window.create_connection()
     cursor = connection.cursor()
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS students (StudentID VARCHAR(255), StudentName VARCHAR(255), Gender VARCHAR(255), Year VARCHAR(255), CourseCode VARCHAR(255))"
-    )
+    cursor.execute(query, params)
+    result = cursor.fetchall()
+    connection.close()
+    return result
+
+def populate_student_table(main_window, data=None):
+    create_table_query = """
+        CREATE TABLE IF NOT EXISTS students (
+            StudentID VARCHAR(255),
+            StudentName VARCHAR(255),
+            Gender VARCHAR(255),
+            Year VARCHAR(255),
+            CourseCode VARCHAR(255)
+        )
+    """
+    execute_query(main_window, create_table_query)
+
     if data is None:
-        cursor.execute("SELECT * FROM students")
-        data = cursor.fetchall()
+        data = execute_query(main_window, "SELECT * FROM students")
 
     main_window.student_table.clearContents()
     main_window.student_table.setRowCount(len(data))
@@ -19,7 +32,6 @@ def populate_student_table(main_window, data=None):
             item = QTableWidgetItem(row_data[column_index])
             main_window.student_table.setItem(row_index, column_index, item)
 
-    connection.close()
 
 def add_student(main_window):
     dialog = QDialog(main_window)
@@ -32,7 +44,7 @@ def add_student(main_window):
     gender_input = QComboBox()
     gender_input.addItems(["Male", "Female", "Other"])
     year_input = QComboBox()
-    year_input.addItems(["First", "Second", "Third", "Fourth"])
+    year_input.addItems(["1", "2", "3", "4"])
     course_code_input = QComboBox()
     course_codes = main_window.get_course_codes()
     course_code_input.addItems(course_codes)
@@ -131,7 +143,7 @@ def update_student(main_window):
     gender_input.addItems(["Male", "Female", "Other"])
     gender_input.setCurrentText(student_data[2])
     year_input = QComboBox()
-    year_input.addItems(["First", "Second", "Third", "Fourth"])
+    year_input.addItems(["1", "2", "3", "4"])
     year_input.setCurrentText(student_data[3])
     course_code_input = QComboBox()
     course_codes = main_window.get_course_codes()
